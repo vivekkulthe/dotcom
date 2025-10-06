@@ -1,0 +1,201 @@
+/* styles.css - Google-like, Material-inspired theme
+   Replace your existing styles.css with this file.
+*/
+
+/* --- Color system --- */
+:root{
+  --bg: #f3f4f6;            /* page canvas (light gray) */
+  --card-bg: #ffffff;       /* cards / panels */
+  --muted: #6b7280;         /* secondary text */
+  --text: #0f172a;          /* primary text */
+  --primary: #1a73e8;       /* Google blue */
+  --primary-contrast: #ffffff;
+  --accent: #0f9d58;        /* green accent for success actions */
+  --danger: #d93025;        /* red for emergencies */
+  --outline: rgba(15,23,42,0.08);
+  --shadow: 0 6px 18px rgba(15,23,42,0.06);
+  --rounded: 12px;
+  --maxw: 1050px;
+  --font-stack: "Google Sans", Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+}
+
+/* --- Base --- */
+* { box-sizing: border-box; }
+html,body { height: 100%; }
+body{
+  margin: 0;
+  font-family: var(--font-stack);
+  background: var(--bg);
+  color: var(--text);
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  padding: 28px;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+/* --- Container / card --- */
+.wrap{ width:100%; max-width: var(--maxw); }
+.card{
+  background: var(--card-bg);
+  border-radius: calc(var(--rounded) + 6px);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+  border: 1px solid var(--outline);
+}
+
+/* --- Header --- */
+header{
+  display:flex;
+  gap:18px;
+  align-items:center;
+  padding:22px;
+  border-bottom:1px solid rgba(15,23,42,0.04);
+}
+.logo{
+  width:64px;
+  height:64px;
+  border-radius:10px;
+  background: var(--primary);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color: var(--primary-contrast);
+  flex-shrink:0;
+  box-shadow: 0 6px 16px rgba(26,115,232,0.10);
+}
+.title h1{ margin:0; font-size:20px; font-weight:700; letter-spacing:-0.2px; }
+.title p{ margin:6px 0 0; color:var(--muted); font-size:13px; }
+
+/* --- Controls --- */
+.controls { margin-left:auto; display:flex; gap:10px; align-items:center; }
+.btn {
+  border:1px solid var(--outline);
+  background: var(--card-bg);
+  color: var(--text);
+  padding:10px 14px;
+  border-radius:10px;
+  font-weight:600;
+  cursor:pointer;
+  font-size:14px;
+}
+.btn:hover{ box-shadow: 0 6px 14px rgba(15,23,42,0.04); transform: translateY(-1px); }
+.btn-print { border-color: rgba(26,115,232,0.12); color: var(--primary); }
+.btn-em { background: var(--danger); color: #fff; border-color: rgba(217,48,37,0.1); }
+
+/* --- Main --- */
+main{ padding:22px; }
+.desc{ font-size:14px; color:var(--muted); margin-bottom:12px; }
+
+/* --- Form layout --- */
+.formRow{ display:flex; gap:12px; align-items:center; margin-bottom:14px; }
+@media (max-width:900px){ .formRow{ flex-direction:column; align-items:stretch; } }
+.selectCol{ flex:1; min-width:160px; }
+
+label{ display:block; margin-bottom:6px; font-size:13px; color:var(--text); font-weight:600; }
+
+/* --- Inputs / selects: outlined, solid background --- */
+select, input[type="text"], .searchInput {
+  width:100%;
+  padding:12px 14px;
+  border-radius:10px;
+  border:1px solid var(--outline);
+  background: #ffffff;
+  font-size:15px;
+  color: var(--text);
+  outline: none;
+  transition: box-shadow 0.12s ease, border-color 0.12s ease;
+}
+select:focus, input[type="text"]:focus, .searchInput:focus{
+  border-color: rgba(26,115,232,0.28);
+  box-shadow: 0 6px 18px rgba(26,115,232,0.08);
+}
+
+/* Add a subtle icon slot on the left for search (if used) */
+.inputWithIcon {
+  position: relative;
+}
+.inputWithIcon .iconSlot{
+  position: absolute; left:12px; top:50%; transform: translateY(-50%);
+  color: var(--muted); pointer-events:none;
+}
+.inputWithIcon input { padding-left:40px; }
+
+/* --- Results card --- */
+.resultBox{
+  margin-top:8px;
+  border-radius:12px;
+  padding:14px;
+  background: var(--card-bg);
+  border: 1px solid rgba(15,23,42,0.03);
+}
+.resultHeader{ display:flex; justify-content:space-between; align-items:center; gap:12px; }
+.resultHeader h2{ margin:0; font-size:16px; font-weight:700; }
+.resultHeader .muted{ color:var(--muted); font-size:13px; }
+
+/* --- Result list items --- */
+.resultList{ margin-top:12px; display:flex; flex-direction:column; gap:10px; }
+.cardItem{
+  display:flex; justify-content:space-between; align-items:center;
+  padding:12px; border-radius:10px;
+  background: #ffffff;
+  border: 1px solid var(--outline);
+  box-shadow: 0 6px 12px rgba(2,6,23,0.03);
+}
+.cardLeft{ max-width:66%; }
+.cardTitle{ font-size:15px; font-weight:700; margin-bottom:6px; color:var(--text); }
+.cardSub{ color:var(--muted); font-size:13px; }
+
+/* --- Action buttons (call links) --- */
+.callBtn{
+  display:inline-block;
+  padding:9px 12px;
+  border-radius:8px;
+  text-decoration:none;
+  font-weight:700;
+  font-size:14px;
+  border: 1px solid var(--outline);
+  background: #fff;
+  color: var(--primary);
+}
+.callBtn:hover{
+  box-shadow: 0 8px 22px rgba(26,115,232,0.08);
+  transform: translateY(-2px);
+}
+.callBtn.secondary{
+  color: #0f9d58; /* green */
+  border-color: rgba(15,23,42,0.06);
+}
+
+/* --- Empty / hint --- */
+.empty{ padding:14px; color:var(--muted); font-size:14px; text-align:center; }
+
+/* --- Collapsible full list --- */
+.moreArea{ margin-top:18px; text-align:center; }
+.toggleLink{ color:var(--primary); text-decoration:underline; cursor:pointer; font-weight:700; }
+.fullList{ max-height:0; overflow:hidden; transition: all 260ms ease; margin-top:10px; border-radius:10px; border:1px solid rgba(15,23,42,0.03); background:var(--card-bg); padding:0 12px; }
+.fullList.open{ max-height:1000px; padding:12px; }
+.fullRow{ display:flex; gap:10px; align-items:center; justify-content:space-between; padding:10px 6px; border-bottom:1px dashed rgba(15,23,42,0.04); }
+.fullRow:last-child{ border-bottom:0; }
+
+/* --- Emergency box (solid accent) --- */
+.emergencyBox{
+  background: #fff;
+  border-left: 4px solid var(--danger);
+  padding:12px;
+  border-radius:8px;
+}
+.emergencyTitle{ color:var(--danger); font-size:15px; font-weight:800; }
+.emergencyText{ margin-top:8px; color:#7a1b1b; font-size:14px; }
+
+/* --- Footer --- */
+footer{ padding:12px 20px; color:var(--muted); font-size:13px; border-top:1px solid rgba(15,23,42,0.03); text-align:center; }
+
+/* --- Responsive tweaks --- */
+@media (max-width:560px){
+  .logo{ width:54px; height:54px; border-radius:10px; }
+  .title h1{ font-size:18px; }
+  .cardItem{ flex-direction:column; align-items:flex-start; gap:8px; }
+  .cardRight{ width:100%; display:flex; gap:8px; }
+}
