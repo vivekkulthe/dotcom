@@ -1,0 +1,18 @@
+category,subcategoryId,subcategoryName,tag
+Water,borewell,Borewell / Pump,borewell
+Water,drinking,Drinking / Tap water,drinking
+Water,tank,Tank cleaning,tank
+Water,underground,Underground pump / sensor,pump
+Electrical,generator,Generator / Backup,generator
+Electrical,lighting,Internal lighting / Passage,lighting
+Electrical,solar,Solar panels / Solar lights,solar
+Electrical,solarwater,Solar water (hot water),hot
+Security,cctv,CCTV / Video door phone,cctv
+Security,guard,Security guard / Gate,guard
+Security,door,Entry door / Access,door
+Maintenance,clean,Cleanliness / Housekeeping,cleanliness
+Maintenance,pest,Pest control,pest
+Maintenance,parking,Parking / Mechanical parking,parking
+Maintenance,service,Service companies (fittings, windows...),service
+Emergency,lift,Lift stuck / not moving,lift
+Emergency,fire,Fire equipment / Alarm,fire

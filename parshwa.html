@@ -1,0 +1,390 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Shri Durga Society — Quick Help (CSV-driven)</title>
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <div class="wrap" role="main" aria-label="Shri Durga Society help">
+    <div class="card" aria-labelledby="pageTitle">
+      <header>
+        <div class="logo" aria-hidden="true">
+          <!-- small house icon -->
+          <svg width="40" height="40" viewBox="0 0 24 24" fill="none" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 10.5L12 4l9 6.5V20a1 1 0 0 1-1 1h-5v-6H9v6H4a1 1 0 0 1-1-1V10.5z" fill="#fff" opacity="0.06"/>
+            <path d="M4 10.5L12 5l8 5.5" stroke="#fff" stroke-width="1.1" stroke-linecap="round" stroke-linejoin="round"/>
+            <rect x="8.5" y="13.5" width="3.5" height="4" rx="0.5" fill="#fff"/>
+          </svg>
+        </div>
+
+        <div class="title">
+          <h1 id="pageTitle">Shri Durga Co-operative Housing Society</h1>
+          <p class="lead">Choose a category and subcategory to see who to call. Edit contacts in <code>contacts.csv</code>.</p>
+        </div>
+
+        <div class="controls" aria-hidden="true">
+          <button class="btn btn-print" id="printBtn" title="Print">Print</button>
+          <a class="btn btn-em" href="#emergencyNotice" title="Emergency">Emergency</a>
+        </div>
+      </header>
+
+      <main>
+        <div class="desc">Large readable text, vivid colors, and simple controls. Edit CSV files in the same folder to update contacts or categories.</div>
+
+        <div class="formRow" role="form" aria-label="Find contact form">
+          <div class="selectCol">
+            <label for="categorySelect">Category</label>
+            <select id="categorySelect" aria-controls="subcategorySelect">
+              <option value="">-- Loading categories --</option>
+            </select>
+          </div>
+
+          <div class="selectCol">
+            <label for="subcategorySelect">Subcategory</label>
+            <select id="subcategorySelect">
+              <option value="">-- Select category first --</option>
+            </select>
+          </div>
+
+          <div class="selectCol" style="max-width:220px;">
+            <label for="preferenceSelect">Contact preference</label>
+            <select id="preferenceSelect">
+              <option value="both">Show both contacts</option>
+              <option value="primary">Show primary only</option>
+              <option value="secondary">Show secondary only</option>
+            </select>
+          </div>
+        </div>
+
+        <div id="results" class="resultBox" aria-live="polite">
+          <div class="resultHeader">
+            <h2>Results</h2>
+            <div class="muted" id="resultsHint">Loading data...</div>
+          </div>
+
+          <div class="resultList" id="resultList" aria-label="Matching contacts">
+            <div class="empty">Waiting for data...</div>
+          </div>
+        </div>
+
+        <div id="emergencyNotice" style="margin-top:14px;" tabindex="-1">
+          <div class="emergencyBox">
+            <strong class="emergencyTitle">Emergency guide</strong>
+            <div class="emergencyText">If fire, call the fire brigade and then society contact. If lift stuck, call lift contact and security. For major water/electrical hazard, switch off main only if safe and call contacts.</div>
+          </div>
+        </div>
+
+        <div class="moreArea">
+          <div style="margin-top:18px;">
+            <span class="muted">Not able to find what you are looking for?</span>
+            <span class="toggleLink" id="openFullListBtn" role="button" aria-expanded="false" tabindex="0"> Click here to see complete contact list for common problems</span>
+          </div>
+
+          <div id="fullList" class="fullList" aria-hidden="true">
+            <div style="padding:8px 6px;">
+              <div id="fullRows"></div>
+            </div>
+          </div>
+        </div>
+      </main>
+
+      <footer>
+        Keep a printed copy on your noticeboard or save this page to your phone for quick access.
+      </footer>
+    </div>
+  </div>
+
+  <script>
+  /****************************************************************
+   * CSV-driven page
+   * - contacts.csv (columns: problem,c1,c1Phone,c2,c2Phone,tags)
+   * - categories.csv (columns: category, subcategoryId, subcategoryName, tag)
+   * Place all files in same folder. Serve via HTTP (or host).
+   *
+   * NOTE: fetch() of local files may be blocked by the browser when
+   * opening via file:// . Use a small local server (instructions below).
+   ****************************************************************/
+
+  // filenames (must be in same folder)
+  const CONTACTS_CSV = 'contacts.csv';
+  const CATEGORIES_CSV = 'categories.csv';
+
+  // minimal CSV parser supporting quoted fields
+  function parseCSV(text){
+    const rows = [];
+    let cur = '', inQuotes = false, row = [], i=0;
+    while(i < text.length){
+      const ch = text[i];
+      if(inQuotes){
+        if(ch === '"'){
+          if(text[i+1] === '"'){ cur += '"'; i+=2; continue; } // escaped quote
+          inQuotes = false; i++; continue;
+        } else { cur += ch; i++; continue; }
+      } else {
+        if(ch === '"'){ inQuotes = true; i++; continue; }
+        if(ch === ','){ row.push(cur); cur = ''; i++; continue; }
+        if(ch === '\n' || ch === '\r'){
+          // handle \r\n or \n
+          if(ch === '\r' && text[i+1] === '\n'){ i++; }
+          row.push(cur); rows.push(row); row = []; cur = ''; i++; continue;
+        }
+        cur += ch; i++;
+      }
+    }
+    // push last
+    if(cur !== '' || row.length > 0){ row.push(cur); rows.push(row); }
+    // trim any empty trailing empty-line row
+    if(rows.length > 0 && rows[rows.length-1].length === 1 && rows[rows.length-1][0] === '') rows.pop();
+    return rows;
+  }
+
+  function normalize(s){
+    if(!s) return '';
+    try{ return s.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim(); }
+    catch(e){ return String(s).toLowerCase().trim(); }
+  }
+
+  // DOM helpers
+  const $ = id => document.getElementById(id);
+
+  // app state
+  let CONTACTS = [];
+  let CATEGORIES = {}; // { categoryName: { subcategories: [{id,name,tag}], tags: Set() } }
+
+  // fetch and load CSVs
+  async function loadCSVs(){
+    try {
+      const [cRes, catRes] = await Promise.all([fetch(CONTACTS_CSV), fetch(CATEGORIES_CSV)]);
+      if(!cRes.ok || !catRes.ok) throw new Error('Could not fetch CSV files. Are they present and served over HTTP?');
+      const [cText, catText] = await Promise.all([cRes.text(), catRes.text()]);
+      parseContacts(cText);
+      parseCategories(catText);
+      initUI();
+    } catch(err){
+      console.error(err);
+      $('resultsHint').textContent = 'Error loading CSVs. See browser console.';
+      $('resultList').innerHTML = '<div class="empty">Failed to load data. If you opened file locally (file://) try running a small local server or host files.</div>';
+    }
+  }
+
+  // parse contacts.csv
+  // expected header: problem,c1,c1Phone,c2,c2Phone,tags
+  function parseContacts(csvText){
+    const rows = parseCSV(csvText);
+    if(rows.length === 0) return;
+    // header map
+    const header = rows[0].map(h => normalize(h));
+    const idx = (name) => header.indexOf(normalize(name));
+    CONTACTS = [];
+    for(let r=1; r<rows.length; r++){
+      const row = rows[r];
+      if(row.length === 0) continue;
+      const item = {
+        problem: row[idx('problem')] || row[0] || '',
+        c1: row[idx('c1')] || '',
+        c1Phone: row[idx('c1phone')] || '',
+        c2: row[idx('c2')] || '',
+        c2Phone: row[idx('c2phone')] || '',
+        tags: []
+      };
+      const tagsCell = row[idx('tags')] || '';
+      if(tagsCell) item.tags = tagsCell.split(/\s*[,;]\s*/).map(t => normalize(t)).filter(Boolean);
+      CONTACTS.push(item);
+    }
+  }
+
+  // parse categories.csv
+  // expected header: category,subcategoryId,subcategoryName,tag
+  // This allows maintainers to create categories and set which tag maps to subcategory
+  function parseCategories(csvText){
+    const rows = parseCSV(csvText);
+    if(rows.length === 0) return;
+    const header = rows[0].map(h => normalize(h));
+    const idx = (name) => header.indexOf(normalize(name));
+    CATEGORIES = {};
+    for(let r=1; r<rows.length; r++){
+      const row = rows[r];
+      if(row.length === 0) continue;
+      const cat = row[idx('category')] || row[0] || 'Uncategorized';
+      const subId = row[idx('subcategoryid')] || row[1] || '';
+      const subName = row[idx('subcategoryname')] || row[2] || subId || '';
+      const tag = normalize(row[idx('tag')] || row[3] || subId || '');
+      if(!CATEGORIES[cat]) CATEGORIES[cat] = { subcategories: [], tags: new Set() };
+      if(subId){
+        // only add subcategory once per category
+        if(!CATEGORIES[cat].subcategories.find(s=>s.id===subId)){
+          CATEGORIES[cat].subcategories.push({ id: subId, name: subName, tag: tag });
+        }
+      }
+      if(tag) CATEGORIES[cat].tags.add(tag);
+    }
+  }
+
+  // populate UI selects
+  function populateCategorySelect(){
+    const sel = $('categorySelect');
+    sel.innerHTML = '';
+    const def = document.createElement('option'); def.value=''; def.text = '-- Select category --';
+    sel.appendChild(def);
+    Object.keys(CATEGORIES).forEach(cat => {
+      const opt = document.createElement('option'); opt.value = cat; opt.text = cat;
+      sel.appendChild(opt);
+    });
+  }
+  function populateSubcategorySelect(category){
+    const sel = $('subcategorySelect');
+    sel.innerHTML = '';
+    const def = document.createElement('option'); def.value=''; def.text = '-- Select subcategory --';
+    sel.appendChild(def);
+    if(!category || !CATEGORIES[category]) return;
+    CATEGORIES[category].subcategories.forEach(sc => {
+      const opt = document.createElement('option'); opt.value = sc.id; opt.text = sc.name;
+      sel.appendChild(opt);
+    });
+  }
+
+  // matching logic:
+  // If subcategory selected -> require matching the subcategory tag
+  // else if only category -> match any tag assigned to category
+  function findMatches(category, subcategory){
+    if(!category) return [];
+    const catObj = CATEGORIES[category];
+    if(!catObj) return [];
+    // build set of keywords
+    if(subcategory){
+      const sc = catObj.subcategories.find(s=>s.id===subcategory);
+      if(!sc) return [];
+      const k = sc.tag || sc.id;
+      // require that contact tags include this k OR problem text includes k
+      return CONTACTS.filter(item => {
+        const itemTxt = normalize(item.problem + ' ' + (item.tags||[]).join(' '));
+        if(item.tags && item.tags.includes(k)) return true;
+        if(itemTxt.includes(k)) return true;
+        return false;
+      });
+    } else {
+      // category-only: match any of category tags
+      const catTags = Array.from(catObj.tags);
+      return CONTACTS.filter(item => {
+        const itemTxt = normalize(item.problem + ' ' + (item.tags||[]).join(' '));
+        for(const t of catTags){
+          if(!t) continue;
+          if(item.tags && item.tags.includes(t)) return true;
+          if(itemTxt.includes(t)) return true;
+        }
+        return false;
+      });
+    }
+  }
+
+  // rendering
+  function renderResults(matches, preference){
+    const container = $('resultList');
+    container.innerHTML = '';
+    if(!matches || matches.length === 0){
+      const e = document.createElement('div'); e.className='empty';
+      e.textContent = 'No contact found for this selection.';
+      container.appendChild(e);
+      $('resultsHint').textContent = 'Try a different subcategory or view full list below.';
+      return;
+    }
+    $('resultsHint').textContent = matches.length + ' result' + (matches.length>1 ? 's' : '');
+    matches.forEach(item => {
+      const itemEl = document.createElement('div'); itemEl.className = 'cardItem';
+      const left = document.createElement('div'); left.className = 'cardLeft';
+      const title = document.createElement('div'); title.className = 'cardTitle'; title.textContent = item.problem || '';
+      const sub = document.createElement('div'); sub.className = 'cardSub';
+      sub.innerHTML = (item.c1 ? '<strong>Primary:</strong> ' + item.c1 : '') + (item.c2 ? (' &nbsp; <strong>Secondary:</strong> ' + item.c2) : '');
+      left.appendChild(title); left.appendChild(sub);
+
+      const right = document.createElement('div'); right.className = 'cardRight';
+      if((preference === 'primary' || preference === 'both') && item.c1Phone){
+        const a = document.createElement('a'); a.className = 'callBtn'; a.href = item.c1Phone; a.textContent = (item.c1 ? item.c1 + ' • ' : '') + item.c1Phone.replace('tel:','');
+        right.appendChild(a);
+      }
+      if((preference === 'secondary' || preference === 'both') && item.c2Phone){
+        const a2 = document.createElement('a'); a2.className = 'callBtn secondary'; a2.href = item.c2Phone; a2.textContent = (item.c2 ? item.c2 + ' • ' : '') + item.c2Phone.replace('tel:','');
+        right.appendChild(a2);
+      }
+      if(right.children.length === 0){
+        const none = document.createElement('div'); none.className='empty'; none.textContent = 'No phone number available';
+        right.appendChild(none);
+      }
+
+      itemEl.appendChild(left); itemEl.appendChild(right);
+      container.appendChild(itemEl);
+    });
+  }
+
+  function renderFullList(){
+    const container = $('fullRows'); container.innerHTML = '';
+    CONTACTS.forEach(item => {
+      const row = document.createElement('div'); row.className = 'fullRow';
+      const left = document.createElement('div'); left.style.maxWidth='70%';
+      const top = document.createElement('div'); top.style.fontWeight='800'; top.textContent = item.problem || '';
+      const bottom = document.createElement('div'); bottom.style.color='#475569'; bottom.style.fontSize='13px';
+      bottom.textContent = 'Primary: ' + (item.c1||'') + (item.c2 ? '  •  Secondary: ' + (item.c2||'') : '');
+      left.appendChild(top); left.appendChild(bottom);
+
+      const right = document.createElement('div'); right.style.textAlign='right';
+      if(item.c1Phone){ const a1 = document.createElement('a'); a1.className='callBtn'; a1.href = item.c1Phone; a1.textContent = item.c1Phone.replace('tel:',''); right.appendChild(a1); }
+      if(item.c2Phone){ const a2 = document.createElement('a'); a2.className='callBtn secondary'; a2.href = item.c2Phone; a2.textContent = item.c2Phone.replace('tel:',''); a2.style.marginLeft='8px'; right.appendChild(a2); }
+      row.appendChild(left); row.appendChild(right);
+      container.appendChild(row);
+    });
+  }
+
+  // wire UI
+  function initUI(){
+    populateCategorySelect();
+    renderFullList();
+    $('resultsHint').textContent = 'Choose options to see contact';
+
+    $('categorySelect').addEventListener('change', e => {
+      const cat = e.target.value;
+      populateSubcategorySelect(cat);
+      $('resultList').innerHTML = ''; $('resultList').appendChild(createEmpty('Choose a subcategory to see specific results.'));
+    });
+    $('subcategorySelect').addEventListener('change', onSelectionChange);
+    $('preferenceSelect').addEventListener('change', onSelectionChange);
+    $('printBtn').addEventListener('click', () => window.print());
+
+    const toggle = $('openFullListBtn');
+    const container = $('fullList');
+    toggle.addEventListener('click', () => {
+      const open = container.classList.contains('open');
+      if(open){ container.classList.remove('open'); container.setAttribute('aria-hidden','true'); toggle.setAttribute('aria-expanded','false'); }
+      else { container.classList.add('open'); container.setAttribute('aria-hidden','false'); toggle.setAttribute('aria-expanded','true'); renderFullList(); }
+    });
+    toggle.addEventListener('keydown', ev => { if(ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); toggle.click(); } });
+  }
+
+  function createEmpty(msg){ const e = document.createElement('div'); e.className='empty'; e.textContent = msg || 'No data'; return e; }
+
+  function onSelectionChange(){
+    const cat = $('categorySelect').value;
+    const sub = $('subcategorySelect').value;
+    const pref = $('preferenceSelect').value || 'both';
+    if(!cat){
+      $('resultList').innerHTML = ''; $('resultList').appendChild(createEmpty('Choose a category and subcategory to see results.'));
+      $('resultsHint').textContent = 'Choose options to see contact';
+      return;
+    }
+    // if subcategory empty: behave as category-only
+    const matches = findMatches(cat, sub);
+    renderResults(matches, pref);
+  }
+
+  // load CSVs on DOM ready
+  document.addEventListener('DOMContentLoaded', loadCSVs);
+
+  </script>
+
+  <style>
+  /* small inline helpers used by createEmpty while CSS file loads */
+  .empty{ padding:14px; color:#475569; text-align:center; }
+  </style>
+</body>
+</html>
