@@ -28,8 +28,8 @@ module.exports = {
   
     },
     fontFamily: {
-      robotoSlab: ["Roboto Slab", "serif"],
-      poppins: ['Poppins', "sans-serif"],
+      robotoSlab: ["Onest", "serif"],
+      Onest: ['Onest', "sans-serif"],
       
     },
     fontSize: {

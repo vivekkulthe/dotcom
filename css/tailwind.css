@@ -596,7 +596,7 @@ video {
   --tw-gradient-to: rgb(250 82 82 / 0);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   --tw-gradient-to: #DD2476;
-  font-family: Roboto Slab, serif;
+  font-family: Onest, serif;
   font-size: 2.5rem;
   font-weight: 700;
 }
@@ -704,7 +704,7 @@ video {
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
   padding-left: 1rem;
-  font-family: Poppins, sans-serif;
+  font-family: Onest, sans-serif;
   font-size: .8125rem;
   font-weight: 500;
   --tw-text-opacity: 1;
@@ -752,7 +752,7 @@ video {
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
   padding-left: 1rem;
-  font-family: Poppins, sans-serif;
+  font-family: Onest, sans-serif;
   font-size: .8125rem;
   font-weight: 500;
   --tw-text-opacity: 1;
@@ -855,7 +855,7 @@ video {
   --tw-gradient-to: rgb(250 82 82 / 0);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   --tw-gradient-to: #DD2476;
-  font-family: Poppins, sans-serif;
+  font-family: Onest, sans-serif;
   font-size: .8125rem;
   font-weight: 500;
   --tw-text-opacity: 1;
@@ -913,7 +913,7 @@ video {
   --tw-gradient-to: rgb(250 82 82 / 0);
   --tw-gradient-stops: var(--tw-gradient-from), var(--tw-gradient-to);
   --tw-gradient-to: #DD2476;
-  font-family: Poppins, sans-serif;
+  font-family: Onest, sans-serif;
   font-size: .8125rem;
   font-weight: 500;
   --tw-text-opacity: 1;
@@ -1191,7 +1191,7 @@ video {
   --tw-gradient-to: #DD2476;
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
-  font-family: Poppins, sans-serif;
+  font-family: Onest, sans-serif;
   font-size: .8125rem;
   font-weight: 500;
   --tw-text-opacity: 1;
@@ -1248,7 +1248,7 @@ video {
   --tw-gradient-to: #DD2476;
   padding-top: 0.625rem;
   padding-bottom: 0.625rem;
-  font-family: Poppins, sans-serif;
+  font-family: Onest, sans-serif;
   font-size: .8125rem;
   font-weight: 500;
   --tw-text-opacity: 1;
@@ -2362,11 +2362,11 @@ video {
 }
 
 .font-robotoSlab {
-  font-family: Roboto Slab, serif;
+  font-family: Onest, serif;
 }
 
-.font-poppins {
-  font-family: Poppins, sans-serif;
+.font-Onest {
+  font-family: Onest, sans-serif;
 }
 
 .text-xl {
